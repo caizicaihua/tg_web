@@ -4,7 +4,7 @@
 # 每30秒检查一次Git仓库更新，有更新时自动重新构建
 
 # 配置信息
-PROJECT_PATH="/data/www/tg-web"
+PROJECT_PATH="/data/www/tg_web"
 LOG_FILE="/data/logs/tg-web-watch.log"
 CHECK_INTERVAL=30  # 检查间隔（秒）
 LAST_COMMIT_FILE="/tmp/last_commit_hash"
