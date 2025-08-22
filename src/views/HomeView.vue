@@ -126,6 +126,48 @@ onMounted(() => {
             </div>
           </div>
         </div>
+        
+        <q-separator />
+        
+        <!-- 业务页面导航 -->
+        <div class="business-pages">
+          <div class="text-h6 q-mb-md">💼 业务页面</div>
+          <div class="row q-col-gutter-sm">
+            <div class="col-12 col-sm-4">
+              <q-card class="business-card" clickable @click="$router.push('/product-input')">
+                <q-card-section class="text-center">
+                  <q-icon name="edit_note" size="48px" color="primary" class="q-mb-sm" />
+                  <div class="text-h6">产品录入</div>
+                  <div class="text-caption text-grey">
+                    产品信息录入和提交
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 col-sm-4">
+              <q-card class="business-card" clickable @click="$router.push('/business-payment/123')">
+                <q-card-section class="text-center">
+                  <q-icon name="account_balance_wallet" size="48px" color="secondary" class="q-mb-sm" />
+                  <div class="text-h6">商务认款</div>
+                  <div class="text-caption text-grey">
+                    商务付款确认
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 col-sm-4">
+              <q-card class="business-card" clickable @click="$router.push('/business-transactions')">
+                <q-card-section class="text-center">
+                  <q-icon name="receipt_long" size="48px" color="accent" class="q-mb-sm" />
+                  <div class="text-h6">商务流水</div>
+                  <div class="text-caption text-grey">
+                    流水记录和状态管理
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
+        </div>
       </div>
   </q-card>
   </div>
@@ -204,5 +246,23 @@ onMounted(() => {
 
 .test-card .q-card__section {
   padding: 24px 16px;
+}
+
+.business-pages {
+  padding: 16px 0;
+}
+
+.business-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.business-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.business-card .q-card__section {
+  padding: 20px 16px;
 }
 </style>

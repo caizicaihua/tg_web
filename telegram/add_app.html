@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .auto-resize-textarea {
+            width: 100%;
+            min-height: 100px;
+            max-height: 400px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .auto-resize-textarea:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .auto-resize-textarea::placeholder {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .button-group {
+            text-align: center;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            min-width: 200px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            margin-left: 10px;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 成功弹窗样式 */
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h3 {
+            color: #28a745;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .modal-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .result-list {
+            margin-bottom: 25px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .result-value {
+            color: #666;
+            font-size: 14px;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-all;
+        }
+
+        .modal-footer {
+            text-align: center;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .confirm-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 手机端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-top: 20px;
+                padding-bottom: 100px; /* 为输入法留出空间 */
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .auto-resize-textarea {
+                padding: 12px;
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+
+            .submit-btn {
+                padding: 12px 30px;
+                font-size: 16px;
+                min-width: 180px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .result-item {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .result-value {
+                max-width: 60%;
+                text-align: right;
+                margin-top: 0;
+            }
+        }
+
+        /* 小屏幕手机适配 */
+        @media (max-width: 480px) {
+            body {
+                padding-top: 15px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .header p {
+                font-size: 13px;
+            }
+
+            .content {
+                padding: 15px 12px;
+            }
+
+            .auto-resize-textarea {
+                padding: 10px;
+            }
+
+            .submit-btn {
+                padding: 10px 25px;
+                min-width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 产品信息</h1>
+            <p>输入产品信息，确保有必填项</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-group">
+                <label class="input-label" for="messageInput">产品信息</label>
+                <textarea 
+                    id="messageInput" 
+                    class="auto-resize-textarea" 
+                    placeholder="请输入产品信息，支持多行输入&#10;例如：&#10;客户名称：测试客户&#10;平台：FB&#10;商务：LQT&#10;需求/KPI：15&#10;产品链接：example.com&#10;合作模式：6+1&#10;群名：测试群&#10;投放地区&开户时区：+7 印尼"
+                ></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="submitBtn" class="submit-btn" type="button">
+                    发送信息
+                    <span class="loading" id="loading"></span>
+                </button>
+            </div>
+            
+            <div id="successMessage" class="success-message">
+                ✅ 信息发送成功！
+            </div>
+            
+            <div id="errorMessage" class="error-message">
+                ❌ 发送失败，请重试
+            </div>
+            
+            <!-- Token状态显示（调试用） -->
+            <div id="tokenStatus" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 12px; color: #666;">
+                <div>Token状态: <span id="tokenInfo">检查中...</span></div>
+                <!-- <div>API地址: https://bx.jbtls.xyz/app_add</div> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功弹窗 -->
+    <div id="successModal" class="success-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✅ 解析完毕</h3>
+                <p>产品信息是否正确</p>
+            </div>
+            
+            <div class="result-list" id="resultList">
+                <!-- 结果数据将在这里动态显示 -->
+            </div>
+            
+            <div class="modal-footer">
+                <button class="confirm-btn" type="button">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- 引入API -->
+    <script src="/telegram/js/telegram-post.js"></script>
+    
+    <script>
+        // 自动调整文本框高度
+        function autoResizeTextarea(textarea) {
+            // 重置高度以获取正确的scrollHeight
+            textarea.style.height = 'auto';
+            
+            // 设置新高度
+            const newHeight = Math.max(100, textarea.scrollHeight);
+            textarea.style.height = newHeight + 'px';
+            
+            // 限制最大高度
+            if (newHeight > 400) {
+                textarea.style.height = '400px';
+                textarea.style.overflowY = 'auto';
+            } else {
+                textarea.style.overflowY = 'hidden';
+            }
+        }
+
+        // 获取文本框元素
+        const textarea = document.getElementById('messageInput');
+        
+        // 监听输入事件
+        textarea.addEventListener('input', function() {
+            autoResizeTextarea(this);
+        });
+        
+        // 监听键盘事件（支持Ctrl+Enter发送）
+        textarea.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                submitMessage();
+            }
+        });
+
+        // 页面加载时初始化高度
+        document.addEventListener('DOMContentLoaded', function() {
+            autoResizeTextarea(textarea);
+        });
+
+        // 检查API是否加载成功
+        function checkAPILoaded() {
+            if (typeof window.TelegramPostAPI === 'undefined') {
+                console.error('TelegramPostAPI 未加载');
+                showError('API加载失败，请刷新页面重试');
+                return false;
+            }
+            return true;
+        }
+
+        // 获取URL参数中的token
+        function getTokenFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('token');
+        }
+
+        // 发送信息函数
+        async function submitMessage() {
+            console.log('submitMessage函数被调用');
+            
+            if (!checkAPILoaded()) return;
+            
+            const message = textarea.value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // 检查元素是否存在
+            if (!submitBtn) {
+                console.error('发送按钮不存在');
+                return;
+            }
+            
+            // 检查按钮是否已被禁用
+            if (submitBtn.disabled) {
+                console.log('按钮已被禁用，忽略点击');
+                return;
+            }
+            
+            // 验证输入
+            if (!message) {
+                showError('请输入产品信息');
+                return;
+            }
+
+            // 获取token
+            const token = getTokenFromUrl();
+            if (!token) {
+                showError('缺少访问令牌，请检查链接');
+                return;
+            }
+            
+            // 重置全局变量
+            window.appResultData = null;
+            
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.style.pointerEvents = 'none';
+            if (loading) {
+                loading.style.display = 'inline-block';
+            }
+            submitBtn.textContent = '发送中';
+            hideMessages();
+            
+            try {
+                // 使用TelegramPostAPI发送请求
+                const result = await window.TelegramPostAPI.post('/tg_api/app_add', {
+                    token: token,
+                    text: message
+                });
+
+                console.log('API响应结果:', result);
+
+                if (result.success) {
+                    // 处理响应数据
+                    const data = result.data;
+                    if (data && (data.code === 1 || data.status === 1)) {
+                        // 显示成功弹窗，包含返回数据
+                        showSuccessModal(data.data || data.res_data || {});
+                        textarea.value = '';
+                        autoResizeTextarea(textarea);
+                    } else {
+                        // 处理业务错误
+                        let errorMsg = '发送失败';
+                        if (data && data.msg) {
+                            errorMsg = data.msg;
+                        } else if (data && data.message) {
+                            errorMsg = data.message;
+                        }
+                        showError(errorMsg);
+                    }
+                } else {
+                    // 处理网络错误
+                    showError(result.error || '网络请求失败');
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                showError('网络请求失败，请检查网络连接');
+            } finally {
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+                submitBtn.textContent = '发送信息';
+                
+                // 确保按钮完全可用
+                submitBtn.removeAttribute('disabled');
+                submitBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        // 显示成功消息
+        function showSuccess(message) {
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = '✅ ' + message;
+            successMessage.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // 显示成功弹窗
+        function showSuccessModal(data) {
+            const modal = document.getElementById('successModal');
+            const resultList = document.getElementById('resultList');
+            
+            // 保存返回数据到全局变量
+            window.appResultData = data;
+            
+            // 清空之前的内容
+            resultList.innerHTML = '';
+            
+            // 获取前8个参数
+            const keys = Object.keys(data).slice(0, 8);
+            
+            // 创建结果列表
+            keys.forEach(key => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+                
+                const label = document.createElement('div');
+                label.className = 'result-label';
+                label.textContent = getFieldLabel(key);
+                
+                const value = document.createElement('div');
+                value.className = 'result-value';
+                value.textContent = data[key] || '-';
+                
+                item.appendChild(label);
+                item.appendChild(value);
+                resultList.appendChild(item);
+            });
+            
+            // 显示弹窗
+            modal.style.display = 'block';
+            
+            // 防止背景滚动
+            document.body.style.overflow = 'hidden';
+            
+            // 确保确认按钮事件监听器已绑定
+            setTimeout(() => {
+                const confirmBtn = document.querySelector('.confirm-btn');
+                if (confirmBtn) {
+                    // 移除所有之前的事件监听器
+                    const newConfirmBtn = confirmBtn.cloneNode(true);
+                    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+                    
+                    // 添加新的事件监听器
+                    newConfirmBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        console.log('确认按钮被点击（动态绑定）');
+                        submitAppAdd();
+                    });
+                }
+            }, 100);
+        }
+
+        // 关闭成功弹窗
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'none';
+            
+            // 恢复背景滚动
+            document.body.style.overflow = '';
+            
+            // 清空全局变量
+            window.appResultData = null;
+        }
+
+        // 提交app_add_submit接口
+        async function submitAppAdd() {
+            console.log('submitAppAdd函数被调用');
+            
+            if (!checkAPILoaded()) return;
+            
+            // 防重复提交检查
+            if (window.isSubmitting) {
+                console.log('正在提交中，忽略重复点击');
+                return;
+            }
+            
+            const token = getTokenFromUrl();
+            const appResultData = window.appResultData;
+            
+            console.log('Token:', token);
+            console.log('AppResultData:', appResultData);
+            
+            if (!token) {
+                showError('缺少访问令牌');
+                return;
+            }
+            
+            if (!appResultData) {
+                showError('缺少返回数据，请重新发送信息');
+                closeSuccessModal();
+                return;
+            }
+            
+            if (!appResultData.app_no) {
+                showError('缺少app_no信息');
+                return;
+            }
+            
+            // 设置提交状态
+            window.isSubmitting = true;
+            
+            // 显示加载状态
+            const confirmBtn = document.querySelector('.confirm-btn');
+            const originalText = confirmBtn.textContent;
+            confirmBtn.textContent = '提交中...';
+            confirmBtn.disabled = true;
+            confirmBtn.style.pointerEvents = 'none';
+            
+            try {
+                // 使用TelegramPostAPI发送请求
+                const result = await window.TelegramPostAPI.post('/tg_api/app_add_submit', {
+                    token: token,
+                    app_no: appResultData.app_no
+                });
+
+                console.log('API响应结果:', result);
+
+                if (result.success) {
+                    // 处理响应数据
+                    const data = result.data;
+                    if (data && (data.code === 1 || data.status === 1)) {
+                        showSuccess('产品信息确认成功！');
+                        closeSuccessModal();
+                        // 清空全局变量
+                        window.appResultData = null;
+                    } else {
+                        // 处理业务错误
+                        let errorMsg = '确认失败';
+                        if (data && data.msg) {
+                            errorMsg = data.msg;
+                        } else if (data && data.message) {
+                            errorMsg = data.message;
+                        }
+                        showError(errorMsg);
+                    }
+                } else {
+                    // 处理网络错误
+                    showError(result.error || '网络请求失败');
+                }
+            } catch (error) {
+                console.error('请求错误:', error);
+                showError('网络请求失败，请检查网络连接');
+            } finally {
+                // 恢复按钮状态
+                confirmBtn.textContent = originalText;
+                confirmBtn.disabled = false;
+                confirmBtn.style.pointerEvents = 'auto';
+                
+                // 重置提交状态
+                window.isSubmitting = false;
+            }
+        }
+
+        // 获取字段标签
+        function getFieldLabel(key) {
+            const labels = {
+                'name': '产品名称',
+                'bus': '商务',
+                'chat_group': '群名',
+                'area': '地区',
+                'customer_name': '客户名称',
+                'kpi': 'KPI',
+                'rate': '费率',
+                'loss': '损耗',
+                'app_no': '订单号',
+                'customer_id': '客户ID',
+                'bus_id': '商务ID',
+                'am_id': 'AM ID',
+                'time_zone': '时区',
+                'remark': '备注'
+            };
+            return labels[key] || key;
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // 隐藏所有消息
+        function hideMessages() {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // 防止页面缩放（iOS）
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+
+        // 输入法处理
+        let initialViewportHeight = window.innerHeight;
+        let isKeyboardVisible = false;
+
+        // 监听视口高度变化（输入法弹出/收起）
+        window.addEventListener('resize', function() {
+            const currentHeight = window.innerHeight;
+            const heightDifference = initialViewportHeight - currentHeight;
+            
+            // 如果高度减少超过150px，认为输入法弹出
+            if (heightDifference > 150 && !isKeyboardVisible) {
+                isKeyboardVisible = true;
+                handleKeyboardShow();
+            } 
+            // 如果高度恢复，认为输入法收起
+            else if (heightDifference < 50 && isKeyboardVisible) {
+                isKeyboardVisible = false;
+                handleKeyboardHide();
+            }
+        });
+
+        // 输入法弹出时的处理
+        function handleKeyboardShow() {
+            // 滚动到输入框位置
+            setTimeout(() => {
+                textarea.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 100);
+        }
+
+        // 输入法收起时的处理
+        function handleKeyboardHide() {
+            // 滚动到页面顶部
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        }
+
+        // 输入框获得焦点时的处理
+        textarea.addEventListener('focus', function() {
+            // 延迟处理，等待输入法弹出
+            setTimeout(() => {
+                if (window.innerHeight < initialViewportHeight - 100) {
+                    handleKeyboardShow();
+                }
+            }, 300);
+        });
+
+        // 输入框失去焦点时的处理
+        textarea.addEventListener('blur', function() {
+            // 延迟处理，等待输入法收起
+            setTimeout(() => {
+                if (window.innerHeight > initialViewportHeight - 50) {
+                    handleKeyboardHide();
+                }
+            }, 300);
+        });
+
+        // 点击页面其他区域时收起输入法
+        document.addEventListener('click', function(e) {
+            if (e.target !== textarea && e.target !== submitBtn) {
+                textarea.blur();
+            }
+        });
+
+        // 点击弹窗背景关闭弹窗
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSuccessModal();
+            }
+        });
+
+        // 页面加载时清空全局变量
+        document.addEventListener('DOMContentLoaded', function() {
+            initialViewportHeight = window.innerHeight;
+            
+            // 初始化Telegram Web App
+            initializeTelegramWebApp();
+            
+            // 清空全局变量
+            window.appResultData = null;
+            window.isSubmitting = false;
+            
+            // 检查token是否存在
+            const token = getTokenFromUrl();
+            const tokenInfo = document.getElementById('tokenInfo');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // 确保发送按钮状态正确
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.pointerEvents = 'auto';
+                submitBtn.textContent = '发送信息';
+                
+                // 为发送按钮添加事件监听器
+                submitBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('发送按钮被点击（事件监听器）');
+                    submitMessage();
+                });
+            }
+            
+            if (!token) {
+                tokenInfo.textContent = '❌ 未找到Token';
+                tokenInfo.style.color = '#dc3545';
+                showError('缺少访问令牌，请检查链接是否正确');
+                submitBtn.disabled = true;
+            } else {
+                tokenInfo.textContent = '✅ Token已就绪';
+                tokenInfo.style.color = '#28a745';
+                hideMessages();
+            }
+            
+            // 确认按钮的事件监听器将在弹窗显示时动态绑定
+        });
+
+        // 初始化Telegram Web App
+        function initializeTelegramWebApp() {
+            try {
+                // 检查是否在Telegram环境中
+                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                    const telegramWebApp = window.Telegram.WebApp;
+                    
+                    // 设置Web App主题
+                    telegramWebApp.ready();
+                    telegramWebApp.expand();
+                    
+                    console.log('Telegram Web App 初始化成功');
+                    console.log('initData:', telegramWebApp.initData);
+                    console.log('user:', telegramWebApp.initDataUnsafe?.user);
+                } else {
+                    console.log('非Telegram Web App环境');
+                }
+            } catch (error) {
+                console.error('Telegram Web App 初始化失败:', error);
+            }
+        }
+
+        // 触摸反馈
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.95)';
+        });
+        
+        submitBtn.addEventListener('touchend', function() {
+            this.style.transform = '';
+        });
+
+
+    </script>
+</body>
+</html> 

@@ -19,6 +19,21 @@ const router = createRouter({
       name: 'new-test',
       component: () => import('../views/NewTestView.vue'),
     },
+    {
+      path: '/product-input',
+      name: 'product-input',
+      component: () => import('../views/ProductInput.vue'),
+    },
+    {
+      path: '/business-payment/:id',
+      name: 'business-payment',
+      component: () => import('../views/BusinessPayment.vue'),
+    },
+    {
+      path: '/business-transactions',
+      name: 'business-transactions',
+      component: () => import('../views/BusinessTransactions.vue'),
+    },
 
   ],
 })

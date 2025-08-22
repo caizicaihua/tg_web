@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认款确认</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .payment-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            text-align: right;
+            word-break: break-all;
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .usdt-amount {
+            color: #28a745;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .custom-select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: #f8f9fa;
+            outline: none;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+        }
+
+        .custom-select:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        /* 客户列表样式 */
+        .customer-list-container {
+            margin-top: 15px;
+        }
+
+        .customer-list-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .customer-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .customer-item {
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 2px solid #f0f0f0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .customer-item:last-child {
+            border-bottom: none;
+        }
+
+        .customer-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .customer-item.selected {
+            background-color: #667eea;
+            color: white;
+            border-left: 4px solid #5a6fd8;
+        }
+
+        .customer-item.hidden {
+            display: none;
+        }
+
+        .customer-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .customer-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .customer-item-details {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        .customer-item.selected .customer-item-details {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .customer-item-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .no-results {
+            padding: 30px 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            background: #f8f9fa;
+        }
+
+        .customer-list-empty {
+            padding: 30px 15px;
+            text-align: center;
+            color: #666;
+            background: #f8f9fa;
+        }
+
+        .button-group {
+            text-align: center;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 15px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .my-address-btn {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .my-address-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .my-address-btn:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .confirm-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .confirm-dialog-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .confirm-dialog-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .confirm-dialog-message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .confirm-dialog-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .confirm-dialog-btn {
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .confirm-dialog-btn.cancel {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .confirm-dialog-btn.cancel:hover {
+            background: #e9ecef;
+        }
+
+        .confirm-dialog-btn.confirm {
+            background: #667eea;
+            color: white;
+        }
+
+        .confirm-dialog-btn.confirm:hover {
+            background: #5a6fd8;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 25px 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .content {
+                padding: 25px 15px;
+            }
+
+            .info-row {
+                padding: 10px 0;
+            }
+
+            .info-label {
+                font-size: 13px;
+                min-width: 70px;
+            }
+
+            .info-value {
+                font-size: 13px;
+            }
+
+            .usdt-amount {
+                font-size: 15px;
+            }
+
+            .custom-select {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .search-input {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .customer-list {
+                max-height: 250px;
+            }
+
+            .customer-item {
+                padding: 12px;
+            }
+
+            .customer-item-title {
+                font-size: 15px;
+            }
+
+            .customer-item-details {
+                font-size: 12px;
+            }
+
+            .submit-btn {
+                padding: 12px 30px;
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header p {
+                font-size: 13px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .payment-info {
+                padding: 15px;
+            }
+
+            .info-label {
+                font-size: 12px;
+                min-width: 60px;
+            }
+
+            .info-value {
+                font-size: 12px;
+            }
+
+            .usdt-amount {
+                font-size: 14px;
+            }
+
+            .custom-select {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .search-input {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .customer-list {
+                max-height: 200px;
+            }
+
+            .customer-item {
+                padding: 10px;
+            }
+
+            .customer-item-title {
+                font-size: 14px;
+            }
+
+            .customer-item-details {
+                font-size: 11px;
+            }
+
+            .submit-btn {
+                padding: 10px 25px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>认款确认</h1>
+            <p>请确认收款信息并选择对应的客户</p>
+        </div>
+
+        <div class="content">
+            <!-- 收款信息显示区域 -->
+            <div class="payment-info">
+                <div class="info-row">
+                    <span class="info-label">流水号:</span>
+                    <span class="info-value" id="transactionId">TX123456789</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">打款账户:</span>
+                    <span class="info-value" id="senderAccount">0x1234...5678</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">收款账户:</span>
+                    <span class="info-value" id="receiverAccount">0x9876...4321</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">USDT数量:</span>
+                    <span class="info-value usdt-amount" id="usdtAmount">1,000.00</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">客户群:</span>
+                    <span class="info-value" id="groupName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">产品名:</span>
+                    <span class="info-value" id="projectName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">客户名:</span>
+                    <span class="info-value" id="customerName">-</span>
+                </div>
+            </div>
+
+            <!-- 客户选择区域 -->
+            <div class="input-group">
+                <label class="input-label">选择客户:</label>
+                <div class="customer-list-container">
+                    <div class="customer-list-header">
+                        <input type="text" class="search-input" id="customerSearch" placeholder="搜索客户...">
+                    </div>
+                    <div class="customer-list" id="customerList">
+                        <div class="customer-list-empty">加载中...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 消息显示区域 -->
+            <div id="messageContainer" style="display: none;"></div>
+
+            <!-- 按钮区域 -->
+            <div class="button-group">
+                <button class="submit-btn" id="confirmBtn" onclick="confirmPayment()">
+                    确认认款
+                </button>
+                <button class="my-address-btn" id="myAddressBtn" onclick="goToMyAddress()">
+                    我的地址
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- 引入API -->
+    <script src="/telegram/js/telegram-post.js"></script>
+    
+    <script>
+        // 页面加载时获取URL参数并调用接口
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 从URL参数中获取token和admin_id
+            const token = urlParams.get('token');
+            const adminId = urlParams.get('admin_id');
+            
+            if (!token || !adminId) {
+                showMessage('缺少必要参数：token 或 admin_id', 'error');
+                return;
+            }
+            
+            // 延迟检查TelegramPostAPI是否已加载
+            setTimeout(() => {
+                checkAndLoadData(token, adminId);
+            }, 100);
+        });
+
+        // 检查API并加载数据
+        function checkAndLoadData(token, adminId) {
+            // 检查TelegramPostAPI是否已加载
+            if (typeof window.TelegramPostAPI === 'undefined') {
+                console.error('TelegramPostAPI 未加载，重试中...');
+                // 再次延迟重试
+                setTimeout(() => {
+                    checkAndLoadData(token, adminId);
+                }, 500);
+                return;
+            }
+            
+            console.log('TelegramPostAPI 已加载:', window.TelegramPostAPI);
+            
+            // 初始化Telegram Web App
+            initializeTelegramWebApp();
+            
+            // 调用接口获取交易信息和客户列表
+            fetchTradeInfo(token, adminId);
+        }
+
+        // 初始化Telegram Web App
+        function initializeTelegramWebApp() {
+            try {
+                // 检查是否在Telegram环境中
+                if (typeof window.Telegram !== 'undefined' && window.Telegram.WebApp) {
+                    const telegramWebApp = window.Telegram.WebApp;
+                    
+                    // 设置Web App主题
+                    telegramWebApp.ready();
+                    telegramWebApp.expand();
+                    
+                    console.log('Telegram Web App 初始化成功');
+                    console.log('initData:', telegramWebApp.initData);
+                    console.log('user:', telegramWebApp.initDataUnsafe?.user);
+                } else {
+                    console.log('非Telegram Web App环境');
+                }
+            } catch (error) {
+                console.error('Telegram Web App 初始化失败:', error);
+            }
+        }
+
+        // 检查API是否加载成功
+        function checkAPILoaded() {
+            if (typeof window.TelegramPostAPI === 'undefined') {
+                console.error('TelegramPostAPI 未加载');
+                showMessage('API加载失败，请刷新页面重试', 'error');
+                return false;
+            }
+            return true;
+        }
+        
+        // 获取交易信息函数
+        async function fetchTradeInfo(token, adminId) {
+            if (!checkAPILoaded()) return;
+
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = '加载中...';
+            
+            try {
+                // 使用TelegramPostAPI发送请求
+                const result = await window.TelegramPostAPI.post('/tg_api/get_trade_info', {
+                    token: token,
+                    admin_id: adminId
+                });
+
+                console.log('API响应结果:', result);
+
+                if (result.success) {
+                    // 处理响应数据
+                    const data = result.data;
+                    if (data && data.code === 1) {
+                        // 成功获取数据
+                        const tradeInfo = data.data;
+                        
+                        // 显示交易信息
+                        document.getElementById('transactionId').textContent = tradeInfo.id;
+                        document.getElementById('senderAccount').textContent = tradeInfo.from_address;
+                        document.getElementById('receiverAccount').textContent = tradeInfo.to_address;
+                        document.getElementById('usdtAmount').textContent = tradeInfo.transfer_amount;
+                        
+                        // 显示新增字段
+                        document.getElementById('groupName').textContent = tradeInfo.group_name || '-';
+                        document.getElementById('projectName').textContent = tradeInfo.project_name || '-';
+                        document.getElementById('customerName').textContent = tradeInfo.customer_name || '-';
+                        
+                        // 更新客户列表
+                        updateCustomerList(tradeInfo.app_list);
+                        
+                        // 启用确认按钮
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '确认认款';
+                    } else {
+                        // 处理业务错误
+                        let errorMsg = '获取交易信息失败';
+                        if (data && data.msg) {
+                            errorMsg = data.msg;
+                        }
+                        showMessage(errorMsg, 'error');
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = '确认认款';
+                    }
+                } else {
+                    // 处理网络错误
+                    showMessage(result.error || '网络请求失败', 'error');
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = '确认认款';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('网络错误，请重试', 'error');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '确认认款';
+            }
+        }
+        
+        // 更新客户列表函数
+        function updateCustomerList(appList) {
+            const customerList = document.getElementById('customerList');
+            
+            // 清空现有选项
+            customerList.innerHTML = '';
+            
+            if (appList && appList.length > 0) {
+                appList.forEach((app, index) => {
+                    const parts = app.title.split('--');
+                    const productName = parts[0] || '';
+                    const groupName = parts[1] || '';
+                    const customerName = parts[2] || '';
+                    
+                    const customerItem = document.createElement('div');
+                    customerItem.className = 'customer-item';
+                    customerItem.setAttribute('data-value', app.id);
+                    customerItem.setAttribute('data-text', app.title);
+                    
+                    customerItem.innerHTML = `
+                        <div class="customer-item-content">
+                            <div class="customer-item-title">${productName}</div>
+                            <div class="customer-item-details">
+                                群名：${groupName} | 客户：${customerName}
+                            </div>
+                        </div>
+                        <div class="customer-item-badge">${index + 1}</div>
+                    `;
+                    
+                    customerList.appendChild(customerItem);
+                });
+                
+                // 重新绑定事件
+                bindCustomerEvents();
+            } else {
+                const noDataDiv = document.createElement('div');
+                noDataDiv.className = 'customer-list-empty';
+                noDataDiv.textContent = '暂无可用客户';
+                customerList.appendChild(noDataDiv);
+            }
+        }
+        
+        // 绑定客户事件函数
+        function bindCustomerEvents() {
+            const customerItems = document.querySelectorAll('.customer-item');
+            
+            customerItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const text = this.getAttribute('data-text');
+                    
+                    selectedCustomerValue = value;
+                    selectedCustomerText = text;
+                    
+                    // 移除其他选项的选中状态
+                    customerItems.forEach(customer => customer.classList.remove('selected'));
+                    // 添加当前选项的选中状态
+                    this.classList.add('selected');
+                    
+                    // 更新搜索框显示选中的客户
+                    const searchInput = document.getElementById('customerSearch');
+                    searchInput.value = text;
+                });
+            });
+        }
+
+        // 全局变量
+        let selectedCustomerValue = '';
+        let selectedCustomerText = '';
+
+        // 初始化搜索功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('customerSearch');
+
+            // 输入搜索
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const customerItems = document.querySelectorAll('.customer-item');
+                let hasVisibleOptions = false;
+
+                customerItems.forEach(item => {
+                    const text = item.getAttribute('data-text').toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.classList.remove('hidden');
+                        hasVisibleOptions = true;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+
+                // 显示或隐藏"无结果"提示
+                let noResults = document.querySelector('.no-results');
+                if (!hasVisibleOptions && searchTerm) {
+                    if (!noResults) {
+                        noResults = document.createElement('div');
+                        noResults.className = 'no-results';
+                        noResults.textContent = '没有找到匹配的客户';
+                        document.getElementById('customerList').appendChild(noResults);
+                    }
+                } else if (noResults) {
+                    noResults.remove();
+                }
+            });
+        });
+
+        // 确认认款函数
+        function confirmPayment() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            const messageContainer = document.getElementById('messageContainer');
+            
+            // 验证是否选择了客户
+            if (!selectedCustomerValue) {
+                showMessage('请选择客户', 'error');
+                return;
+            }
+            
+            // 检查是否已经认领
+            const groupName = document.getElementById('groupName').textContent;
+            const projectName = document.getElementById('projectName').textContent;
+            const customerName = document.getElementById('customerName').textContent;
+            
+            if (groupName !== '-' && projectName !== '-' && customerName !== '-') {
+                // 已经认领，显示提示
+                showMessage('该笔款已经认领，无法重复操作', 'warning');
+                return;
+            }
+            
+            // 显示二次确认对话框
+            showConfirmDialog();
+        }
+        
+        // 显示确认对话框
+        function showConfirmDialog() {
+            // 解析选中的客户信息
+            const selectedText = selectedCustomerText;
+            const parts = selectedText.split('--');
+            const productName = parts[0] || '';
+            const groupName = parts[1] || '';
+            const customerName = parts[2] || '';
+            
+            const dialog = document.createElement('div');
+            dialog.className = 'confirm-dialog';
+            dialog.innerHTML = `
+                <div class="confirm-dialog-content">
+                    <div class="confirm-dialog-title">确认认款</div>
+                    <div class="confirm-dialog-message">
+                        您确定要认领这笔款项吗？<br><br>
+                        <strong>认领信息：</strong><br>
+                        群名：${groupName}<br>
+                        产品：${productName}<br>
+                        客户：${customerName}<br><br>
+                        认领后将无法撤销。
+                    </div>
+                    <div class="confirm-dialog-buttons">
+                        <button class="confirm-dialog-btn cancel" onclick="hideConfirmDialog()">取消</button>
+                        <button class="confirm-dialog-btn confirm" onclick="submitPayment()">确认</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+        }
+        
+        // 隐藏确认对话框
+        function hideConfirmDialog() {
+            const dialog = document.querySelector('.confirm-dialog');
+            if (dialog) {
+                dialog.remove();
+            }
+        }
+        
+        // 提交认款
+        async function submitPayment() {
+            if (!checkAPILoaded()) return;
+
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+            // 隐藏确认对话框
+            hideConfirmDialog();
+            
+            // 禁用按钮并显示加载状态
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('loading');
+            confirmBtn.textContent = '确认中...';
+            
+            try {
+                // 使用TelegramPostAPI发送请求
+                const result = await window.TelegramPostAPI.post('/tg_api/update_app_info', {
+                    token: document.getElementById('transactionId').textContent,
+                    app_id: selectedCustomerValue,
+                    admin_id: new URLSearchParams(window.location.search).get('admin_id')
+                });
+
+                console.log('API响应结果:', result);
+
+                if (result.success) {
+                    // 处理响应数据
+                    const data = result.data;
+                    if (data && data.code === 1) {
+                        showMessage('认款成功！', 'success');
+                        
+                        // 更新页面信息
+                        updatePageAfterSuccess();
+                        
+                        // 成功后可以跳转或显示成功信息
+                        setTimeout(() => {
+                            // 可以跳转到其他页面或关闭当前页面
+                            if (window.Telegram && window.Telegram.WebApp) {
+                                window.Telegram.WebApp.close();
+                            }
+                        }, 3000);
+                    } else {
+                        // 处理业务错误
+                        let errorMsg = '认款失败，请重试';
+                        if (data && data.msg) {
+                            errorMsg = data.msg;
+                        }
+                        showMessage(errorMsg, 'error');
+                    }
+                } else {
+                    // 处理网络错误
+                    showMessage(result.error || '网络请求失败', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('网络错误，请重试', 'error');
+            } finally {
+                // 恢复按钮状态
+                confirmBtn.disabled = false;
+                confirmBtn.classList.remove('loading');
+                confirmBtn.textContent = '确认认款';
+            }
+        }
+        
+        // 显示消息函数
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById('messageContainer');
+            let className = 'error-message';
+            
+            if (type === 'success') {
+                className = 'success-message';
+            } else if (type === 'warning') {
+                className = 'warning-message';
+            }
+            
+            messageContainer.className = className;
+            messageContainer.textContent = message;
+            messageContainer.style.display = 'block';
+            
+            // 3秒后自动隐藏消息
+            setTimeout(() => {
+                messageContainer.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 更新页面信息函数
+        function updatePageAfterSuccess() {
+            // 解析选中的客户信息
+            const selectedText = selectedCustomerText;
+            const parts = selectedText.split('--');
+            const productName = parts[0] || '';
+            const groupName = parts[1] || '';
+            const customerName = parts[2] || '';
+            
+            // 更新三个字段显示
+            document.getElementById('groupName').textContent = groupName;
+            document.getElementById('projectName').textContent = productName;
+            document.getElementById('customerName').textContent = customerName;
+            
+            // 禁用客户选择器
+            const searchInput = document.getElementById('customerSearch');
+            searchInput.value = selectedCustomerText;
+            searchInput.readOnly = true;
+            searchInput.style.backgroundColor = '#e9ecef';
+            searchInput.style.cursor = 'not-allowed';
+            
+            // 禁用确认按钮
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = '已认领';
+            confirmBtn.style.backgroundColor = '#6c757d';
+            confirmBtn.style.cursor = 'not-allowed';
+            
+            // 隐藏客户列表
+            const customerList = document.getElementById('customerList');
+            customerList.style.display = 'none';
+            
+            // 更新页面标题
+            const headerTitle = document.querySelector('.header h1');
+            headerTitle.textContent = '认款完成';
+            
+            const headerDesc = document.querySelector('.header p');
+            headerDesc.textContent = '该笔款项已成功认领';
+        }
+        
+        // 跳转到我的地址页面
+        function goToMyAddress() {
+            const adminId = new URLSearchParams(window.location.search).get('admin_id');
+            if (adminId) {
+                window.location.href = `my_address.html?admin_id=${adminId}`;
+            } else {
+                showMessage('缺少商务ID参数', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

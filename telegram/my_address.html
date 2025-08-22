@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的地址</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .search-container {
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            background: white;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn.all {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .filter-btn.all.active {
+            background: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .trade-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .trade-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .trade-item:hover {
+            background: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .trade-item.approved {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .trade-item.approved:hover {
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-color: transparent;
+        }
+
+        .trade-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .trade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        .trade-id {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            word-break: break-all;
+            line-height: 1.3;
+            min-width: 0;
+        }
+
+        .trade-item.selected .trade-id {
+            color: white;
+        }
+
+        .trade-status-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .trade-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-unclaimed {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-claimed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .trade-item.selected .status-unclaimed {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .trade-item.selected .status-claimed {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .trade-item.selected .status-approved {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .trade-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 60px;
+            line-height: 1.4;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            word-break: break-all;
+            line-height: 1.4;
+            overflow-wrap: break-word;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .trade-item.selected .detail-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .trade-item.selected .detail-value {
+            color: white;
+        }
+
+        .trade-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .trade-item.selected .trade-amount {
+            color: #90EE90;
+        }
+
+        .trade-customer {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .trade-item.selected .trade-customer {
+            border-top-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .customer-info {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .trade-item.selected .customer-info {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px;
+            gap: 10px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .page-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 14px;
+            color: #666;
+            margin: 0 15px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                border-radius: 15px;
+            }
+
+            .header {
+                padding: 25px 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .content {
+                padding: 25px 15px;
+            }
+
+            .trade-item {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .trade-header {
+                margin-bottom: 8px;
+            }
+
+            .trade-id {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .trade-status-row {
+                margin-bottom: 10px;
+            }
+
+            .trade-details {
+                gap: 8px;
+            }
+
+            .detail-item {
+                gap: 6px;
+                align-items: baseline;
+            }
+
+            .detail-label {
+                font-size: 11px;
+                min-width: 50px;
+                line-height: 1.5;
+            }
+
+            .detail-value {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .trade-amount {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header p {
+                font-size: 13px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .trade-item {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .trade-header {
+                margin-bottom: 6px;
+            }
+
+            .trade-id {
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .trade-status-row {
+                margin-bottom: 8px;
+            }
+
+            .trade-status {
+                font-size: 11px;
+                padding: 3px 8px;
+            }
+
+            .trade-details {
+                gap: 6px;
+            }
+
+            .detail-item {
+                gap: 4px;
+                align-items: baseline;
+            }
+
+            .detail-label {
+                font-size: 10px;
+                min-width: 45px;
+                line-height: 1.6;
+            }
+
+            .detail-value {
+                font-size: 12px;
+                line-height: 1.6;
+            }
+
+            .trade-amount {
+                font-size: 15px;
+            }
+
+            .filter-container {
+                gap: 6px;
+            }
+
+            .filter-btn {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<button class="back-btn" onclick="goBack()">← 返回</button>
+
+<div class="container">
+    <div class="header">
+        <h1>我的地址</h1>
+        <p>查看您的收款地址流水记录</p>
+    </div>
+
+    <div class="content">
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索流水号或地址...">
+        </div>
+
+        <!-- 状态筛选 -->
+        <div class="filter-container">
+            <button class="filter-btn all active" onclick="filterByStatus('all')">全部</button>
+            <button class="filter-btn" onclick="filterByStatus('unclaimed')">未认领</button>
+            <button class="filter-btn" onclick="filterByStatus('claimed')">待审核</button>
+            <button class="filter-btn" onclick="filterByStatus('approved')">已审核</button>
+        </div>
+
+        <!-- 流水列表 -->
+        <div class="trade-list" id="tradeList">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <div>加载中...</div>
+            </div>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="page-btn" id="prevBtn" onclick="changePage(-1)">上一页</button>
+            <span class="page-info" id="pageInfo">第 1 页，共 1 页</span>
+            <button class="page-btn" id="nextBtn" onclick="changePage(1)">下一页</button>
+        </div>
+    </div>
+</div>
+
+<!-- 引入Telegram Web App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- 引入API -->
+<script src="/telegram/js/telegram-post.js"></script>
+
+<script>
+    // 全局变量
+    let currentPage = 1;
+    let totalPages = 1;
+    let tradeData = [];
+    let filteredData = [];
+    let currentStatusFilter = 'all';
+    let currentSearchTerm = '';
+    const pageSize = 100; // 改为100，显示所有数据
+
+    // 页面加载时获取数据
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminId = new URLSearchParams(window.location.search).get('admin_id');
+        if (!adminId) {
+            showError('缺少商务ID参数');
+            return;
+        }
+        
+        // 延迟检查TelegramPostAPI是否已加载
+        setTimeout(() => {
+            checkAndLoadData(adminId);
+        }, 100);
+    });
+
+    // 检查API并加载数据
+    function checkAndLoadData(adminId) {
+        // 检查TelegramPostAPI是否已加载
+        if (typeof window.TelegramPostAPI === 'undefined') {
+            console.error('TelegramPostAPI 未加载，重试中...');
+            // 再次延迟重试
+            setTimeout(() => {
+                checkAndLoadData(adminId);
+            }, 500);
+            return;
+        }
+        
+        console.log('TelegramPostAPI 已加载:', window.TelegramPostAPI);
+        loadTradeData(adminId);
+        initSearch();
+    }
+
+    // 处理API响应
+    function handleAPIResponse(result, successCallback) {
+        if (!result.success) {
+            // 网络请求失败
+            console.error('网络请求失败:', result.error);
+            showError(result.error || '网络请求失败');
+            return false;
+        }
+
+        const responseData = result.data;
+        console.log('响应数据:', responseData);
+
+        if (responseData && typeof responseData === 'object') {
+            if (responseData.code === 1) {
+                // 成功响应
+                console.log('业务成功，数据:', responseData.data);
+                successCallback(responseData.data, responseData.extra);
+                return true;
+            } else if (responseData.code === -1) {
+                // 业务错误
+                console.error('业务错误:', responseData.msg);
+                showError(responseData.msg || '业务处理失败');
+                return false;
+            } else if (responseData.code !== undefined) {
+                // 其他业务状态码
+                console.warn('未知业务状态码:', responseData.code, responseData.msg);
+                showError(responseData.msg || `未知错误 (${responseData.code})`);
+                return false;
+            } else {
+                // 没有code字段，可能是直接数据
+                console.log('直接数据格式:', responseData);
+                successCallback(responseData, null);
+                return true;
+            }
+        } else {
+            // 响应数据格式异常
+            console.error('响应数据格式异常:', responseData);
+            showError('响应数据格式异常');
+            return false;
+        }
+    }
+
+    // 加载交易数据
+    async function loadTradeData(adminId) {
+        try {
+            console.log('开始加载交易数据，adminId:', adminId);
+            
+            // 使用TelegramPostAPI发送请求
+            const result = await window.TelegramPostAPI.post('/tg_api/get_trade_list', {
+                admin_id: adminId,
+                page: currentPage,
+                limit: 100 // 获取更多数据用于搜索
+            });
+
+            // 使用通用响应处理函数
+            const success = handleAPIResponse(result, (data, extra) => {
+                tradeData = data || [];
+                filteredData = [...tradeData];
+                renderTradeList();
+                updatePagination(extra);
+            });
+
+            if (!success) {
+                console.log('数据加载失败');
+            }
+        } catch (error) {
+            console.error('加载交易数据异常:', error);
+            showError('网络错误，请重试');
+        }
+    }
+
+    // 渲染交易列表
+    function renderTradeList() {
+        const tradeList = document.getElementById('tradeList');
+
+        if (filteredData.length === 0) {
+            tradeList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div>暂无流水记录</div>
+                    </div>
+                `;
+            return;
+        }
+
+        // 直接显示所有数据，不分页
+        const pageData = filteredData;
+
+        tradeList.innerHTML = pageData.map(trade => {
+            const isApproved = trade.action_aid > 0 && trade.check_status == 1;
+            return `
+                <div class="trade-item ${isApproved ? 'approved' : ''}" onclick="${isApproved ? 'showApprovedMessage()' : `selectTrade('${trade.id}')`}">
+                    <div class="trade-header">
+                        <div class="trade-id">流水号：${formatTradeId(trade.id)}</div>
+                    </div>
+                    <div class="trade-status-row">
+                        <div class="trade-status ${getStatusClass(trade)}">
+                            ${getStatusText(trade)}
+                        </div>
+                    </div>
+                    <div class="trade-details">
+                        <div class="detail-item">
+                            <div class="detail-label">打款地址:</div>
+                            <div class="detail-value">${formatAddress(trade.from_address)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">收款地址:</div>
+                            <div class="detail-value">${formatAddress(trade.to_address)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">交易时间:</div>
+                            <div class="detail-value">${formatTime(trade.trade_time)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">USDT数量:</div>
+                            <div class="detail-value trade-amount">${trade.transfer_amount}</div>
+                        </div>
+                    </div>
+                    ${trade.action_aid > 0 ? `
+                        <div class="trade-customer">
+                            <div class="customer-info">
+                                群名：${trade.group_name} | 产品：${trade.project_name} | 客户：${trade.customer_name}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 格式化流水号显示 - 完整显示
+    function formatTradeId(tradeId) {
+        if (!tradeId) return '-';
+        return tradeId.toString();
+    }
+
+    // 格式化地址显示 - 完整显示
+    function formatAddress(address) {
+        if (!address) return '-';
+        return address;
+    }
+
+    // 获取状态样式类
+    function getStatusClass(trade) {
+        if (trade.action_aid == 0) {
+            return 'status-unclaimed';
+        } else if (trade.check_status == 1) {
+            return 'status-approved';
+        } else {
+            return 'status-claimed';
+        }
+    }
+
+    // 获取状态文本
+    function getStatusText(trade) {
+        if (trade.action_aid == 0) {
+            return '未认领';
+        } else if (trade.check_status == 1) {
+            return '已审核';
+        } else {
+            return '待审核';
+        }
+    }
+
+    // 格式化时间显示
+    function formatTime(timeStr) {
+        if (!timeStr) return '-';
+        const date = new Date(timeStr);
+        return date.toLocaleString('zh-CN', {
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // 更新分页信息
+    function updatePagination(extra) {
+        const pagination = document.getElementById('pagination');
+        // 隐藏分页控件，直接显示所有数据
+        pagination.style.display = 'none';
+    }
+
+    // 切换页面 - 已废弃，直接显示所有数据
+    function changePage(delta) {
+        // 不再需要分页功能
+    }
+
+    // 选择交易
+    function selectTrade(tradeId) {
+        const adminId = new URLSearchParams(window.location.search).get('admin_id');
+        window.location.href = `/telegram/confirm_payment.html?token=${tradeId}&admin_id=${adminId}`;
+    }
+
+    // 显示已审核消息
+    function showApprovedMessage() {
+        alert('该笔流水已审核通过，无法再次认款');
+    }
+
+    // 状态筛选函数
+    function filterByStatus(status) {
+        currentStatusFilter = status;
+        console.log('筛选状态:', status); // 调试信息
+        updateFilterButtons();
+        applyFilters();
+    }
+
+    // 更新筛选按钮状态
+    function updateFilterButtons() {
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        console.log('当前筛选状态:', currentStatusFilter); // 调试信息
+
+        // 根据当前筛选状态添加active类
+        if (currentStatusFilter === 'all') {
+            const allBtn = document.querySelector('.filter-btn.all');
+            if (allBtn) {
+                allBtn.classList.add('active');
+                console.log('激活全部按钮');
+            }
+        } else if (currentStatusFilter === 'unclaimed') {
+            const unclaimedBtn = document.querySelector('.filter-btn[onclick*="unclaimed"]');
+            if (unclaimedBtn) {
+                unclaimedBtn.classList.add('active');
+                console.log('激活未认领按钮');
+            }
+        } else if (currentStatusFilter === 'claimed') {
+            const claimedBtn = document.querySelector('.filter-btn[onclick*="claimed"]');
+            if (claimedBtn) {
+                claimedBtn.classList.add('active');
+                console.log('激活待审核按钮');
+            }
+        } else if (currentStatusFilter === 'approved') {
+            const approvedBtn = document.querySelector('.filter-btn[onclick*="approved"]');
+            if (approvedBtn) {
+                approvedBtn.classList.add('active');
+                console.log('激活已审核按钮');
+            }
+        }
+    }
+
+    // 应用筛选
+    function applyFilters() {
+        let filtered = [...tradeData];
+
+        // 状态筛选
+        if (currentStatusFilter !== 'all') {
+            filtered = filtered.filter(trade => {
+                if (currentStatusFilter === 'unclaimed') {
+                    return trade.action_aid == 0;
+                } else if (currentStatusFilter === 'claimed') {
+                    return trade.action_aid > 0 && trade.check_status != 1;
+                } else if (currentStatusFilter === 'approved') {
+                    return trade.action_aid > 0 && trade.check_status == 1;
+                }
+                return true;
+            });
+        }
+
+        // 搜索筛选
+        if (currentSearchTerm) {
+            filtered = filtered.filter(trade =>
+                trade.id.toString().includes(currentSearchTerm) ||
+                trade.from_address.toLowerCase().includes(currentSearchTerm) ||
+                trade.to_address.toLowerCase().includes(currentSearchTerm) ||
+                (trade.group_name && trade.group_name.toLowerCase().includes(currentSearchTerm)) ||
+                (trade.project_name && trade.project_name.toLowerCase().includes(currentSearchTerm)) ||
+                (trade.customer_name && trade.customer_name.toLowerCase().includes(currentSearchTerm))
+            );
+        }
+
+        filteredData = filtered;
+        renderTradeList();
+    }
+
+    // 初始化搜索
+    function initSearch() {
+        const searchInput = document.getElementById('searchInput');
+
+        searchInput.addEventListener('input', function() {
+            currentSearchTerm = this.value.toLowerCase();
+            applyFilters();
+        });
+    }
+
+    // 显示错误信息
+    function showError(message) {
+        const tradeList = document.getElementById('tradeList');
+        tradeList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">❌</div>
+                    <div>${message}</div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #999;">
+                        请检查网络连接或联系管理员
+                    </div>
+                </div>
+            `;
+    }
+
+    // 返回上一页
+    function goBack() {
+        window.history.back();
+    }
+
+    // 如果是在Telegram WebApp环境中，初始化WebApp
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
+</script>
+</body>
+</html>
+
