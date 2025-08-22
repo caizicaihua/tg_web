@@ -92,6 +92,8 @@ onMounted(() => {
             <q-btn color="primary" unelevated class="q-mb-sm" @click="telegramStore.hapticImpact('medium')" label="触觉反馈" />
             <q-btn color="info" unelevated class="q-mb-sm" @click="telegramStore.showNotification('这是一条测试消息', 'success')" label="显示通知" />
             <q-btn color="warning" unelevated class="q-mb-sm" @click="telegramStore.showBackButton(() => telegramStore.hideBackButton())" label="显示返回按钮" />
+            <q-btn color="secondary" unelevated class="q-mb-sm" @click="$router.push('/test')" label="测试面板" />
+            <q-btn color="accent" unelevated class="q-mb-sm" @click="$router.push('/new-test')" label="新测试页面" />
           </q-space>
         </div>
       </div>
