@@ -4,7 +4,7 @@
 # 在服务器上运行，用于接收和部署代码
 
 # 配置信息
-PROJECT_PATH="/data/www/tg-web"
+PROJECT_PATH="/data/www/tg_web"
 BACKUP_PATH="/data/www/backups"
 LOG_FILE="/data/logs/tg-web-deploy.log"
 
