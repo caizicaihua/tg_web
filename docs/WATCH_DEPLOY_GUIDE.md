@@ -200,28 +200,95 @@ sudo chown -R www:www /data/www/tg-web
 
 ## 🔄 启动和停止
 
-### 启动监听服务
+### 方法一：使用 systemd 服务（推荐）
+
+#### 安装服务
 ```bash
-# 前台运行（推荐用于测试）
-./watch-and-deploy.sh
+# 运行安装脚本
+sudo ./install-watch-service.sh
 
-# 后台运行（推荐用于生产）
-nohup ./watch-and-deploy.sh > /dev/null 2>&1 &
-
-# 使用 systemd 服务（推荐）
-sudo systemctl start tg-web-watch
+# 选择安装方式（推荐选择 1: systemd 服务）
 ```
 
-### 停止监听服务
+#### 管理服务
 ```bash
-# 前台运行：按 Ctrl+C
+# 启动服务
+sudo systemctl start tg-web-watch
 
-# 后台运行：查找并杀死进程
-ps aux | grep watch-and-deploy
-kill <进程ID>
-
-# systemd 服务
+# 停止服务
 sudo systemctl stop tg-web-watch
+
+# 重启服务
+sudo systemctl restart tg-web-watch
+
+# 查看状态
+sudo systemctl status tg-web-watch
+
+# 查看日志
+sudo journalctl -u tg-web-watch -f
+
+# 启用开机自启
+sudo systemctl enable tg-web-watch
+```
+
+### 方法二：使用 supervisor
+
+#### 安装 supervisor
+```bash
+# Ubuntu/Debian
+sudo apt-get install supervisor
+
+# CentOS/RHEL
+sudo yum install supervisor
+```
+
+#### 配置和启动
+```bash
+# 复制配置文件
+sudo cp tg-web-watch.conf /etc/supervisor/conf.d/
+
+# 重新加载配置
+sudo supervisorctl reread
+sudo supervisorctl update
+
+# 启动服务
+sudo supervisorctl start tg-web-watch
+
+# 查看状态
+sudo supervisorctl status tg-web-watch
+```
+
+### 方法三：简单后台运行
+
+#### 启动服务
+```bash
+# 启动后台服务
+./start-watch-daemon.sh
+
+# 查看状态
+ps aux | grep watch-and-deploy
+```
+
+#### 停止服务
+```bash
+# 停止服务
+./stop-watch-daemon.sh
+
+# 或者手动停止
+kill $(cat /tmp/tg-web-watch.pid)
+```
+
+### 方法四：手动后台运行
+
+```bash
+# 后台运行
+nohup ./watch-and-deploy.sh > /dev/null 2>&1 &
+
+# 查看进程
+ps aux | grep watch-and-deploy
+
+# 停止进程
+kill <进程ID>
 ```
 
 ## 📈 监控和维护

@@ -45,6 +45,13 @@ tg_web/
 ├── auto-deploy.sh         # 自动部署脚本
 ├── server-deploy.sh       # 服务器部署脚本
 ├── setup-auto-deploy.sh   # 部署环境设置脚本
+├── watch-and-deploy.sh    # 监听部署脚本（服务器）
+├── watch-and-deploy-local.sh # 监听部署脚本（本地）
+├── start-watch-daemon.sh  # 启动后台服务
+├── stop-watch-daemon.sh   # 停止后台服务
+├── install-watch-service.sh # 安装系统服务
+├── tg-web-watch.service   # systemd 服务配置
+├── tg-web-watch.conf      # supervisor 配置
 ├── nginx.conf             # Nginx 配置
 ├── test-bot.js            # 测试 Bot
 └── README.md              # 项目说明
