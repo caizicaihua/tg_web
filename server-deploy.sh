@@ -4,9 +4,9 @@
 # 在服务器上运行，用于接收和部署代码
 
 # 配置信息
-PROJECT_PATH="/var/www/tg-web"
-BACKUP_PATH="/var/www/backups"
-LOG_FILE="/var/log/tg-web-deploy.log"
+PROJECT_PATH="/data/www/tg-web"
+BACKUP_PATH="/data/www/backups"
+LOG_FILE="/data/logs/tg-web-deploy.log"
 
 echo "$(date): 🚀 开始自动部署..." >> $LOG_FILE
 
