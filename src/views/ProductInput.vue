@@ -115,6 +115,7 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
+import { productAPI } from '@/services/api'
 
 const $q = useQuasar()
 const telegramStore = useTelegramStore()
@@ -125,43 +126,78 @@ const loading = ref(false)
 const validationResult = ref<any>(null)
 const submitHistory = ref<any[]>([])
 
-// 模拟API调用
+// 真实API调用
 const validateProduct = async (data: string) => {
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  // 模拟验证逻辑
-  if (data.length < 10) {
+  try {
+    // 从 Telegram 获取 token
+    const token = telegramStore.user?.id?.toString() || 'default_token'
+    const response = await productAPI.validate(data, token)
+    
+    // 处理你的接口返回格式
+    if (response.success && response.data) {
+      const data = response.data
+      if (data.code === 1 || data.status === 1) {
+        return {
+          success: true,
+          message: '产品信息验证成功',
+          data: data.data || data.res_data || {}
+        }
+      } else {
+        return {
+          success: false,
+          message: data.msg || data.message || '验证失败',
+          data: null
+        }
+      }
+    } else {
+      return {
+        success: false,
+        message: response.error || '验证失败，请重试',
+        data: null
+      }
+    }
+  } catch (error: any) {
     return {
       success: false,
-      message: '产品信息长度不足，至少需要10个字符',
+      message: error.response?.data?.message || '验证失败，请重试',
       data: null
-    }
-  }
-  
-  return {
-    success: true,
-    message: '产品信息验证成功',
-    data: {
-      id: Date.now(),
-      name: data.substring(0, 20) + '...',
-      status: 'validated',
-      timestamp: new Date().toISOString()
     }
   }
 }
 
 const submitProduct = async (data: string) => {
-  // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  return {
-    success: true,
-    message: '产品信息提交成功',
-    data: {
-      id: Date.now(),
-      submittedAt: new Date().toISOString()
+  try {
+    // 从 Telegram 获取 token
+    const token = telegramStore.user?.id?.toString() || 'default_token'
+    const response = await productAPI.submit({ productData: data }, token)
+    
+    // 处理你的接口返回格式
+    if (response.success && response.data) {
+      const data = response.data
+      if (data.code === 1 || data.status === 1) {
+        return {
+          success: true,
+          message: '产品信息提交成功',
+          data: data.data || data.res_data || {}
+        }
+      } else {
+        throw new Error(data.msg || data.message || '提交失败')
+      }
+    } else {
+      throw new Error(response.error || '提交失败，请重试')
     }
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || error.message || '提交失败，请重试')
+  }
+}
+
+// 加载提交历史
+const loadHistory = async () => {
+  try {
+    const response = await productAPI.getHistory()
+    submitHistory.value = response.data || []
+  } catch (error) {
+    console.error('加载历史失败:', error)
   }
 }
 
@@ -224,6 +260,9 @@ const clearForm = () => {
 
 // 初始化
 onMounted(() => {
+  // 加载历史记录
+  loadHistory()
+  
   // 设置主按钮
   telegramStore.showMainButton('提交', handleSubmit)
   

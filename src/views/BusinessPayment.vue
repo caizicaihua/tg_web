@@ -165,6 +165,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
+import { businessPaymentAPI } from '@/services/api'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -195,31 +196,63 @@ const paymentMethods = [
 // 获取认款ID
 const paymentId = computed(() => route.params.id as string)
 
-// 模拟API调用
+// 真实API调用
 const getPaymentInfo = async (id: string) => {
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  return {
-    id: id,
-    amount: '10,000.00',
-    recipient: '北京科技有限公司',
-    payer: '上海贸易有限公司',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    description: '技术服务费用'
+  try {
+    // 从 Telegram 获取 token 和 adminId
+    const token = telegramStore.user?.id?.toString() || 'default_token'
+    const adminId = id // 使用传入的ID作为adminId
+    const response = await businessPaymentAPI.getInfo(token, adminId)
+    
+    // 处理你的接口返回格式
+    if (response.success && response.data) {
+      const data = response.data
+      if (data.code === 1) {
+        return data.data // 返回交易信息
+      } else {
+        throw new Error(data.msg || '获取认款信息失败')
+      }
+    } else {
+      throw new Error(response.error || '获取认款信息失败')
+    }
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || error.message || '获取认款信息失败')
   }
 }
 
 const confirmPayment = async (data: any) => {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  return {
-    success: true,
-    message: '认款确认成功',
-    data: {
-      confirmedAt: new Date().toISOString(),
-      confirmedBy: telegramStore.user?.first_name || '用户'
+  try {
+    // 从 Telegram 获取 token
+    const token = telegramStore.user?.id?.toString() || 'default_token'
+    const response = await businessPaymentAPI.confirm(data, token)
+    
+    // 处理你的接口返回格式
+    if (response.success && response.data) {
+      const data = response.data
+      if (data.code === 1) {
+        return {
+          success: true,
+          message: '认款确认成功',
+          data: data.data || {}
+        }
+      } else {
+        throw new Error(data.msg || '确认失败')
+      }
+    } else {
+      throw new Error(response.error || '确认失败，请重试')
     }
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || error.message || '确认失败，请重试')
+  }
+}
+
+// 加载操作日志
+const loadOperationLogs = async (id: string) => {
+  try {
+    const response = await businessPaymentAPI.getLogs(id)
+    operationLogs.value = response.data || []
+  } catch (error) {
+    console.error('加载操作日志失败:', error)
   }
 }
 
@@ -277,17 +310,12 @@ const loadPaymentInfo = async () => {
     const info = await getPaymentInfo(paymentId.value)
     paymentInfo.value = info
     
-    // 添加操作日志
-    operationLogs.value.unshift({
-      action: 'created',
-      description: '认款信息已创建',
-      timestamp: info.createdAt,
-      details: `金额: ¥${info.amount}`
-    })
+    // 加载操作日志
+    await loadOperationLogs(paymentId.value)
   } catch (error) {
     console.error('加载失败:', error)
     $q.notify({
-      message: '加载认款信息失败',
+      message: error instanceof Error ? error.message : '加载认款信息失败',
       color: 'negative'
     })
   } finally {
