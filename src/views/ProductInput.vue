@@ -87,7 +87,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
-import { productAPI } from '@/services/api'
+import { productAPI, getAuthToken, getTokenStatus } from '@/services/api'
 
 const $q = useQuasar()
 const telegramStore = useTelegramStore()
@@ -178,40 +178,25 @@ const closeModal = () => {
   modalData.value = {}
 }
 
+// 使用统一的认证服务
+const getToken = getAuthToken
+
 // 真实API调用
 const validateProduct = async (data: string) => {
   try {
-    // 从 Telegram 获取 token
-    const token = telegramStore.user?.id?.toString() || 'default_token'
-    const response = await productAPI.validate(data, token)
+    const response = await productAPI.validate(data)
     
-    // 处理你的接口返回格式
-    if (response.success && response.data) {
-      const data = response.data
-      if (data.code === 1 || data.status === 1) {
-        return {
-          success: true,
-          message: '产品信息验证成功',
-          data: data.data || data.res_data || {}
-        }
-      } else {
-        return {
-          success: false,
-          message: data.msg || data.message || '验证失败',
-          data: null
-        }
-      }
-    } else {
-      return {
-        success: false,
-        message: response.error || '验证失败，请重试',
-        data: null
-      }
+    // API层已经处理了code状态，这里直接处理成功情况
+    return {
+      success: true,
+      message: '产品信息验证成功',
+      data: response.data || response.res_data || {}
     }
   } catch (error: any) {
+    // API层已经处理了错误，这里直接返回错误信息
     return {
       success: false,
-      message: error.response?.data?.message || '验证失败，请重试',
+      message: error.message || '验证失败，请重试',
       data: null
     }
   }
@@ -280,12 +265,14 @@ onMounted(() => {
   })
   
   // 更新Token状态
-  if (telegramStore.user?.id) {
-    tokenStatusText.value = 'Token已就绪'
+  const tokenStatus = getTokenStatus()
+  if (tokenStatus.hasToken) {
+    tokenStatusText.value = `✅ Token已就绪 (${tokenStatus.source})`
     tokenStatusClass.value = 'token-ready'
   } else {
-    tokenStatusText.value = 'Token未就绪'
+    tokenStatusText.value = '❌ 未找到Token'
     tokenStatusClass.value = 'token-error'
+    showErrorMessage('缺少访问令牌，请检查Telegram Web App配置')
   }
 })
 </script>

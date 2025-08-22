@@ -165,7 +165,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
-import { businessPaymentAPI } from '@/services/api'
+import { businessPaymentAPI, getAuthToken, getTokenStatus } from '@/services/api'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -196,53 +196,36 @@ const paymentMethods = [
 // 获取认款ID
 const paymentId = computed(() => route.params.id as string)
 
+// 使用统一的认证服务
+const getToken = getAuthToken
+
 // 真实API调用
 const getPaymentInfo = async (id: string) => {
   try {
-    // 从 Telegram 获取 token 和 adminId
-    const token = telegramStore.user?.id?.toString() || 'default_token'
     const adminId = id // 使用传入的ID作为adminId
-    const response = await businessPaymentAPI.getInfo(token, adminId)
+    const response = await businessPaymentAPI.getInfo(adminId)
     
-    // 处理你的接口返回格式
-    if (response.success && response.data) {
-      const data = response.data
-      if (data.code === 1) {
-        return data.data // 返回交易信息
-      } else {
-        throw new Error(data.msg || '获取认款信息失败')
-      }
-    } else {
-      throw new Error(response.error || '获取认款信息失败')
-    }
+    // API层已经处理了code状态，这里直接返回数据
+    return response.data || {}
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || error.message || '获取认款信息失败')
+    // API层已经处理了错误，直接抛出
+    throw error
   }
 }
 
 const confirmPayment = async (data: any) => {
   try {
-    // 从 Telegram 获取 token
-    const token = telegramStore.user?.id?.toString() || 'default_token'
-    const response = await businessPaymentAPI.confirm(data, token)
+    const response = await businessPaymentAPI.confirm(data)
     
-    // 处理你的接口返回格式
-    if (response.success && response.data) {
-      const data = response.data
-      if (data.code === 1) {
-        return {
-          success: true,
-          message: '认款确认成功',
-          data: data.data || {}
-        }
-      } else {
-        throw new Error(data.msg || '确认失败')
-      }
-    } else {
-      throw new Error(response.error || '确认失败，请重试')
+    // API层已经处理了code状态，这里直接返回成功
+    return {
+      success: true,
+      message: '认款确认成功',
+      data: response.data || {}
     }
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || error.message || '确认失败，请重试')
+    // API层已经处理了错误，直接抛出
+    throw error
   }
 }
 

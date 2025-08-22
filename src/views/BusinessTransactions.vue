@@ -247,6 +247,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
+import { businessTransactionAPI, getAuthToken, getTokenStatus } from '@/services/api'
 
 const $q = useQuasar()
 const telegramStore = useTelegramStore()
@@ -281,63 +282,62 @@ const statistics = ref({
   totalCount: 0
 })
 
-// 选项配置
+// 选项配置 - 匹配你的数据结构
 const statusOptions = [
-  { label: '待处理', value: 'pending' },
-  { label: '已完成', value: 'completed' },
-  { label: '已取消', value: 'cancelled' },
-  { label: '处理中', value: 'processing' }
+  { label: '待确认', value: 0 },
+  { label: '已确认', value: 1 }
 ]
 
 const typeOptions = [
-  { label: '收入', value: 'income' },
-  { label: '支出', value: 'expense' }
+  { label: '全部', value: '' },
+  { label: '已确认', value: 1 },
+  { label: '待确认', value: 0 }
 ]
 
-// 表格列配置
+// 表格列配置 - 匹配你的数据结构
 const columns = [
   {
     name: 'id',
-    label: '交易ID',
+    label: '流水号',
     field: 'id',
     align: 'left',
     sortable: true
   },
   {
-    name: 'address',
-    label: '地址',
-    field: 'address',
+    name: 'from_address',
+    label: '打款地址',
+    field: 'from_address',
     align: 'left',
     sortable: true
   },
   {
-    name: 'amount',
-    label: '金额',
-    field: 'amount',
+    name: 'to_address',
+    label: '收款地址',
+    field: 'to_address',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'transfer_amount',
+    label: 'USDT数量',
+    field: 'transfer_amount',
     align: 'right',
     sortable: true
   },
   {
-    name: 'type',
-    label: '类型',
-    field: 'type',
-    align: 'center',
-    sortable: true
-  },
-  {
-    name: 'status',
-    label: '状态',
-    field: 'status',
-    align: 'center',
-    sortable: true
-  },
-  {
-    name: 'createdAt',
-    label: '创建时间',
-    field: 'createdAt',
+    name: 'trade_time',
+    label: '交易时间',
+    field: 'trade_time',
     align: 'center',
     sortable: true,
     format: (val: string) => formatDate(val)
+  },
+  {
+    name: 'check_status',
+    label: '状态',
+    field: 'check_status',
+    align: 'center',
+    sortable: true
   },
   {
     name: 'actions',
@@ -347,81 +347,91 @@ const columns = [
   }
 ]
 
-// 模拟API调用
+// 使用统一的认证服务
+const getToken = getAuthToken
+
+// 真实API调用
 const getTransactions = async (params: any) => {
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  // 模拟数据
-  const mockData = Array.from({ length: 50 }, (_, i) => ({
-    id: `TX${String(i + 1).padStart(6, '0')}`,
-    address: `地址${i + 1}`,
-    amount: (Math.random() * 10000).toFixed(2),
-    type: Math.random() > 0.5 ? 'income' : 'expense',
-    status: ['pending', 'completed', 'cancelled', 'processing'][Math.floor(Math.random() * 4)],
-    createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-    remark: `备注信息 ${i + 1}`
-  }))
-  
-  // 筛选数据
-  let filteredData = mockData.filter(item => {
-    if (filters.value.status && item.status !== filters.value.status) return false
-    if (filters.value.type && item.type !== filters.value.type) return false
-    if (filters.value.search && !item.address.includes(filters.value.search)) return false
-    return true
-  })
-  
-  // 排序
-  filteredData.sort((a, b) => {
-    if (pagination.value.sortBy === 'createdAt') {
-      return pagination.value.descending 
-        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  try {
+    const adminId = getToken()
+    if (!adminId) {
+      throw new Error('缺少访问令牌，请检查Telegram Web App配置')
     }
-    return 0
-  })
-  
-  // 分页
-  const start = (pagination.value.page - 1) * pagination.value.rowsPerPage
-  const end = start + pagination.value.rowsPerPage
-  const pagedData = filteredData.slice(start, end)
-  
-  return {
-    data: pagedData,
-    total: filteredData.length,
-    statistics: {
-      totalIncome: filteredData
-        .filter(item => item.type === 'income')
-        .reduce((sum, item) => sum + parseFloat(item.amount), 0)
-        .toFixed(2),
-      totalExpense: filteredData
-        .filter(item => item.type === 'expense')
-        .reduce((sum, item) => sum + parseFloat(item.amount), 0)
-        .toFixed(2),
-      totalCount: filteredData.length
+    const response = await businessTransactionAPI.getList(adminId, params.page || 1, params.rowsPerPage || 100)
+    
+    // API层已经处理了code状态，这里直接处理数据
+    const tradeList = response.data || []
+    
+    // 计算统计数据
+    const totalIncome = tradeList
+      .filter((item: any) => item.transfer_amount && parseFloat(item.transfer_amount) > 0)
+      .reduce((sum: number, item: any) => sum + parseFloat(item.transfer_amount), 0)
+      .toFixed(2)
+    
+    const totalExpense = '0.00' // 根据你的数据结构调整
+    const totalCount = tradeList.length
+    
+    return {
+      data: tradeList,
+      total: totalCount,
+      statistics: {
+        totalIncome,
+        totalExpense,
+        totalCount
+      }
     }
+  } catch (error: any) {
+    // API层已经处理了错误，直接抛出
+    throw error
   }
 }
 
-// 获取状态颜色
-const getStatusColor = (status: string) => {
-  const colors = {
-    pending: 'warning',
-    completed: 'positive',
-    cancelled: 'negative',
-    processing: 'info'
+// 获取统计信息
+const getStatistics = async (params?: any) => {
+  try {
+    const adminId = getToken()
+    if (!adminId) {
+      throw new Error('缺少访问令牌，请检查Telegram Web App配置')
+    }
+    const response = await businessTransactionAPI.getStatistics(adminId)
+    
+    // API层已经处理了code状态，这里直接处理数据
+    const tradeList = response.data || []
+    
+    // 计算统计数据
+    const totalIncome = tradeList
+      .filter((item: any) => item.transfer_amount && parseFloat(item.transfer_amount) > 0)
+      .reduce((sum: number, item: any) => sum + parseFloat(item.transfer_amount), 0)
+      .toFixed(2)
+    
+    const totalExpense = '0.00' // 根据你的数据结构调整
+    const totalCount = tradeList.length
+    
+    return {
+      totalIncome,
+      totalExpense,
+      totalCount
+    }
+  } catch (error) {
+    console.error('获取统计信息失败:', error)
+    return null
   }
-  return colors[status as keyof typeof colors] || 'grey'
 }
 
-// 获取状态文本
-const getStatusText = (status: string) => {
-  const texts = {
-    pending: '待处理',
-    completed: '已完成',
-    cancelled: '已取消',
-    processing: '处理中'
-  }
-  return texts[status as keyof typeof texts] || '未知'
+// 获取状态颜色 - 匹配你的数据结构
+const getStatusColor = (status: any) => {
+  // 根据你的数据结构调整
+  if (status === 1) return 'positive'
+  if (status === 0) return 'warning'
+  return 'grey'
+}
+
+// 获取状态文本 - 匹配你的数据结构
+const getStatusText = (status: any) => {
+  // 根据你的数据结构调整
+  if (status === 1) return '已确认'
+  if (status === 0) return '待确认'
+  return '未知'
 }
 
 // 获取金额颜色
@@ -453,10 +463,21 @@ const loadTransactions = async () => {
       ...result.statistics,
       netIncome: (parseFloat(result.statistics.totalIncome) - parseFloat(result.statistics.totalExpense)).toFixed(2)
     }
+    
+    // 如果统计数据为空，单独获取统计信息
+    if (!result.statistics || result.statistics.totalCount === 0) {
+      const stats = await getStatistics(filters.value)
+      if (stats) {
+        statistics.value = {
+          ...stats,
+          netIncome: (parseFloat(stats.totalIncome) - parseFloat(stats.totalExpense)).toFixed(2)
+        }
+      }
+    }
   } catch (error) {
     console.error('加载失败:', error)
     $q.notify({
-      message: '加载数据失败',
+      message: error instanceof Error ? error.message : '加载数据失败',
       color: 'negative'
     })
   } finally {
