@@ -299,6 +299,7 @@ npm run deploy:watch
 - [本地开发指南](docs/LOCAL_DEV_GUIDE.md)
 - [测试指南](docs/TESTING_GUIDE.md)
 - [自动部署指南](docs/AUTO_DEPLOY_GUIDE.md)
+- [监听部署指南](docs/WATCH_DEPLOY_GUIDE.md)
 - [快速开始指南](docs/QUICKSTART.md)
 
 ## 🤝 贡献

@@ -16,7 +16,8 @@
     "format": "prettier --write src/",
     "deploy": "./deploy.sh",
     "deploy:auto": "./auto-deploy.sh",
-    "deploy:watch": "node watch-and-deploy.js",
+    "deploy:watch": "./watch-and-deploy.sh",
+    "deploy:watch:local": "./watch-and-deploy-local.sh",
     "serve": "vite preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {
