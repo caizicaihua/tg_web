@@ -66,7 +66,7 @@ deploy_project() {
     
     # 安装依赖
     echo "$(date): 📦 安装依赖..." >> $LOG_FILE
-    if ! npm ci --production; then
+    if ! npm ci; then
         echo "$(date): ❌ 安装依赖失败" >> $LOG_FILE
         echo "❌ 安装依赖失败"
         return 1
@@ -74,7 +74,7 @@ deploy_project() {
     
     # 构建项目
     echo "$(date): 🔨 构建项目..." >> $LOG_FILE
-    if npm run build; then
+    if ./build-production.sh; then
         echo "$(date): ✅ 构建成功" >> $LOG_FILE
         
         # 设置权限（如果可能）

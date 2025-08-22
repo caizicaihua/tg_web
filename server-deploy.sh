@@ -29,11 +29,17 @@ git pull origin main
 
 # 安装依赖
 echo "$(date): 📦 安装依赖..." >> $LOG_FILE
-npm ci --production
+npm ci
 
 # 构建项目
 echo "$(date): 🔨 构建项目..." >> $LOG_FILE
-npm run build
+if ./build-production.sh; then
+    echo "$(date): ✅ 构建成功" >> $LOG_FILE
+else
+    echo "$(date): ❌ 构建失败！" >> $LOG_FILE
+    echo "❌ 构建失败！"
+    exit 1
+fi
 
 # 设置权限
 echo "$(date): 🔐 设置权限..." >> $LOG_FILE
