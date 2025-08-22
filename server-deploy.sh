@@ -37,19 +37,33 @@ npm run build
 
 # 设置权限
 echo "$(date): 🔐 设置权限..." >> $LOG_FILE
-chown -R www-data:www-data $PROJECT_PATH
+chown -R www:www $PROJECT_PATH
 chmod -R 755 $PROJECT_PATH/dist
 
-# 重启 Nginx
-echo "$(date): 🔄 重启 Nginx..." >> $LOG_FILE
-systemctl reload nginx
+# 清理缓存（可选）
+echo "$(date): 🧹 清理缓存..." >> $LOG_FILE
+# 如果需要清理 Nginx 缓存，可以取消下面的注释
+#nginx -s reload
 
-# 检查部署状态
-echo "$(date): 🔍 检查部署状态..." >> $LOG_FILE
-if curl -s -o /dev/null -w "%{http_code}" https://localhost | grep -q "200"; then
-    echo "$(date): ✅ 部署成功！" >> $LOG_FILE
-    echo "✅ 部署成功！"
+# 验证部署结果
+echo "$(date): 🔍 验证部署结果..." >> $LOG_FILE
+
+# 检查构建文件是否存在
+if [ -f "$PROJECT_PATH/dist/index.html" ]; then
+    echo "$(date): ✅ 构建文件生成成功" >> $LOG_FILE
+    
+    # 检查文件修改时间（可选）
+    BUILD_TIME=$(stat -c %Y "$PROJECT_PATH/dist/index.html")
+    CURRENT_TIME=$(date +%s)
+    if [ $((CURRENT_TIME - BUILD_TIME)) -lt 300 ]; then  # 5分钟内
+        echo "$(date): ✅ 部署成功！文件已更新" >> $LOG_FILE
+        echo "✅ 部署成功！"
+    else
+        echo "$(date): ⚠️ 文件可能不是最新版本" >> $LOG_FILE
+        echo "⚠️ 部署完成，但文件可能不是最新版本"
+    fi
 else
-    echo "$(date): ❌ 部署失败！" >> $LOG_FILE
-    echo "❌ 部署失败，请检查日志: $LOG_FILE"
+    echo "$(date): ❌ 构建失败！index.html 不存在" >> $LOG_FILE
+    echo "❌ 构建失败，请检查构建日志"
+    exit 1
 fi
