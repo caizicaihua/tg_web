@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
 import { productAPI, getAuthToken, getTokenStatus } from '@/services/api'
@@ -248,9 +248,6 @@ const handleSubmit = async () => {
 
 // 初始化
 onMounted(() => {
-  // 设置主按钮
-  telegramStore.showMainButton('发送信息', handleSubmit)
-  
   // 设置返回按钮
   telegramStore.showBackButton(() => {
     telegramStore.hideBackButton()
@@ -274,6 +271,11 @@ onMounted(() => {
     tokenStatusClass.value = 'token-error'
     showErrorMessage('缺少访问令牌，请检查Telegram Web App配置')
   }
+})
+
+// 页面卸载时隐藏主按钮
+onUnmounted(() => {
+  telegramStore.hideMainButton()
 })
 </script>
 

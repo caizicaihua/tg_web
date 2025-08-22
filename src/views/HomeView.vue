@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useTelegramStore } from '@/stores/telegram'
 import { QCard, QBtn, QAvatar, QChip, QSeparator, QIcon, QSpace } from 'quasar'
 
@@ -10,13 +10,12 @@ onMounted(() => {
   // 初始化Telegram Web App
   telegramStore.initialize()
   
-  // 显示主按钮
-  telegramStore.showMainButton('设置', () => {
-    telegramStore.hapticImpact('medium')
-    telegramStore.showNotification('设置功能开发中...', 'success')
-  })
-  
   loading.value = false
+})
+
+// 页面卸载时隐藏主按钮
+onUnmounted(() => {
+  telegramStore.hideMainButton()
 })
 </script>
 

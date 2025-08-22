@@ -161,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
@@ -369,12 +369,14 @@ const resetForm = () => {
 onMounted(() => {
   loadPaymentInfo()
   
-  // 设置主按钮
-  telegramStore.showMainButton('确认认款', handleConfirm)
-  
   // 设置返回按钮
   telegramStore.showBackButton(() => {
     telegramStore.hideBackButton()
   })
+})
+
+// 页面卸载时隐藏主按钮
+onUnmounted(() => {
+  telegramStore.hideMainButton()
 })
 </script>

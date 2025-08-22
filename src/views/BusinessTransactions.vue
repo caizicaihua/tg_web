@@ -244,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useTelegramStore } from '@/stores/telegram'
 import { businessTransactionAPI, getAuthToken, getTokenStatus } from '@/services/api'
@@ -508,12 +508,14 @@ const editTransaction = (transaction: any) => {
 onMounted(() => {
   loadTransactions()
   
-  // 设置主按钮
-  telegramStore.showMainButton('刷新', loadTransactions)
-  
   // 设置返回按钮
   telegramStore.showBackButton(() => {
     telegramStore.hideBackButton()
   })
+})
+
+// 页面卸载时隐藏主按钮
+onUnmounted(() => {
+  telegramStore.hideMainButton()
 })
 </script>
