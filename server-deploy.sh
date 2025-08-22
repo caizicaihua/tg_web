@@ -46,11 +46,6 @@ echo "$(date): 🔐 设置权限..." >> $LOG_FILE
 chown -R www:www $PROJECT_PATH
 chmod -R 755 $PROJECT_PATH/dist
 
-# 清理缓存
-echo "$(date): 🧹 清理缓存..." >> $LOG_FILE
-# 清除 Nginx 缓存
-sudo rm -rf /var/cache/nginx/* 2>/dev/null || true
-
 # 验证部署结果
 echo "$(date): 🔍 验证部署结果..." >> $LOG_FILE
 
