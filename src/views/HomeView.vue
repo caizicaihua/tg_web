@@ -88,13 +88,43 @@ onMounted(() => {
         <q-separator />
         <!-- 功能按钮 -->
         <div class="actions">
+          <div class="text-h6 q-mb-md">🔧 功能测试</div>
           <q-space vertical>
             <q-btn color="primary" unelevated class="q-mb-sm" @click="telegramStore.hapticImpact('medium')" label="触觉反馈" />
             <q-btn color="info" unelevated class="q-mb-sm" @click="telegramStore.showNotification('这是一条测试消息', 'success')" label="显示通知" />
             <q-btn color="warning" unelevated class="q-mb-sm" @click="telegramStore.showBackButton(() => telegramStore.hideBackButton())" label="显示返回按钮" />
-            <q-btn color="secondary" unelevated class="q-mb-sm" @click="$router.push('/test')" label="测试面板" />
-            <q-btn color="accent" unelevated class="q-mb-sm" @click="$router.push('/new-test')" label="新测试页面" />
           </q-space>
+        </div>
+        
+        <q-separator />
+        
+        <!-- 测试页面导航 -->
+        <div class="test-pages">
+          <div class="text-h6 q-mb-md">🧪 测试页面</div>
+          <div class="row q-col-gutter-sm">
+            <div class="col-12 col-sm-6">
+              <q-card class="test-card" clickable @click="$router.push('/test')">
+                <q-card-section class="text-center">
+                  <q-icon name="dashboard" size="48px" color="secondary" class="q-mb-sm" />
+                  <div class="text-h6">测试面板</div>
+                  <div class="text-caption text-grey">
+                    基础功能测试、环境检测、API 测试
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+            <div class="col-12 col-sm-6">
+              <q-card class="test-card" clickable @click="$router.push('/new-test')">
+                <q-card-section class="text-center">
+                  <q-icon name="science" size="48px" color="accent" class="q-mb-sm" />
+                  <div class="text-h6">新测试页面</div>
+                  <div class="text-caption text-grey">
+                    完整功能测试、性能测试、组件测试
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
         </div>
       </div>
   </q-card>
@@ -156,5 +186,23 @@ onMounted(() => {
 
 .actions {
   padding: 16px 0;
+}
+
+.test-pages {
+  padding: 16px 0;
+}
+
+.test-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.test-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.test-card .q-card__section {
+  padding: 24px 16px;
 }
 </style>
