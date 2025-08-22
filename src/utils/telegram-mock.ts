@@ -194,10 +194,7 @@ export const mockTelegramWebApp = {
     return true
   },
 
-  // 关闭 Web App
-  close() {
-    console.log('Telegram Web App close')
-  }
+
 }
 
 // 检查是否在 Telegram 环境中
@@ -211,7 +208,7 @@ export function isTelegramEnvironment(): boolean {
 // 获取 Telegram Web App 实例
 export function getTelegramWebApp() {
   if (isTelegramEnvironment()) {
-    return window.Telegram.WebApp
+    return window.Telegram!.WebApp
   } else {
     console.log('⚠️ 使用模拟的 Telegram Web App 环境')
     return mockTelegramWebApp
