@@ -1,0 +1,24 @@
+{
+  "name": "telegram-webapp-test-bot",
+  "version": "1.0.0",
+  "description": "Telegram Web App 测试 Bot",
+  "main": "test-bot.js",
+  "scripts": {
+    "start": "node test-bot.js",
+    "dev": "nodemon test-bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "webapp",
+    "test"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

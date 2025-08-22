@@ -1,0 +1,25 @@
+{
+  "name": "telegram-webapp-bot-example",
+  "version": "1.0.0",
+  "description": "Telegram Web App Bot 示例",
+  "main": "bot-example.js",
+  "scripts": {
+    "start": "node bot-example.js",
+    "dev": "nodemon bot-example.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "webapp",
+    "vue",
+    "javascript"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
